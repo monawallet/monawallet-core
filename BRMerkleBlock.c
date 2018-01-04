@@ -31,8 +31,14 @@
 #include <string.h>
 #include <assert.h>
 
-#define MAX_PROOF_OF_WORK 0x1d00ffff    // highest value for difficulty target (higher values are less difficult)
-#define TARGET_TIMESPAN   (14*24*60*60) // the targeted timespan between difficulty target adjustments
+#define MAX_PROOF_OF_WORK 0x1e0fffff    // highest value for difficulty target (higher values are less difficult)
+#define TARGET_TIMESPAN   95040         // = 1.1*24*60*60; targeted timespan between difficulty target adjustments
+
+#if BITCOIN_TESTNET
+#define HARDFORK_TIMESTAMP 1499441223
+#else
+#define HARDFORK_TIMESTAMP 1443352620   // 2015/09/27 20:17
+#endif
 
 inline static int _ceil_log2(int x)
 {
@@ -121,7 +127,11 @@ BRMerkleBlock *BRMerkleBlockParse(const uint8_t *buf, size_t bufLen)
             block->flags = (off + len <= bufLen) ? malloc(len) : NULL;
             if (block->flags) memcpy(block->flags, &buf[off], len);
         }
-        
+        if (block->timestamp < HARDFORK_TIMESTAMP) {
+            BRScrypt(&block->powHash, sizeof(block->powHash), buf, 80, buf, 80, 1024, 1, 1);
+        }else{
+            BRLyra2REv2((const char*)buf, (char*)&block->powHash);
+        }
         BRSHA256_2(&block->blockHash, buf, 80);
     }
     
@@ -214,6 +224,7 @@ void BRMerkleBlockSetTxHashes(BRMerkleBlock *block, const UInt256 hashes[], size
     assert(hashes != NULL || hashesCount == 0);
     assert(flags != NULL || flagsLen == 0);
     
+    // TODO: fix difficulty target check for Monacoin
     if (block->hashes) free(block->hashes);
     block->hashes = (hashesCount > 0) ? malloc(hashesCount*sizeof(UInt256)) : NULL;
     if (block->hashes) memcpy(block->hashes, hashes, hashesCount*sizeof(UInt256));
@@ -278,8 +289,8 @@ int BRMerkleBlockIsValid(const BRMerkleBlock *block, uint32_t currentTime)
     else UInt32SetLE(t.u8, target >> (3 - size)*8);
     
     for (int i = sizeof(t) - 1; r && i >= 0; i--) { // check proof-of-work
-        if (block->blockHash.u8[i] < t.u8[i]) break;
-        if (block->blockHash.u8[i] > t.u8[i]) r = 0;
+        if (block->powHash.u8[i] < t.u8[i]) break;
+        if (block->powHash.u8[i] > t.u8[i]) r = 0;
     }
     
     return r;
@@ -325,32 +336,33 @@ int BRMerkleBlockVerifyDifficulty(const BRMerkleBlock *block, const BRMerkleBloc
     // TODO: implement testnet difficulty rule check
     return r; // don't worry about difficulty on testnet for now
 #endif
-    
-    if (r && (block->height % BLOCK_DIFFICULTY_INTERVAL) == 0) {
-        // target is in "compact" format, where the most significant byte is the size of resulting value in bytes, next
-        // bit is the sign, and the remaining 23bits is the value after having been right shifted by (size - 3)*8 bits
-        static const uint32_t maxsize = MAX_PROOF_OF_WORK >> 24, maxtarget = MAX_PROOF_OF_WORK & 0x00ffffff;
-        int timespan = (int)((int64_t)previous->timestamp - (int64_t)transitionTime), size = previous->target >> 24;
-        uint64_t target = previous->target & 0x00ffffff;
-    
-        // limit difficulty transition to -75% or +400%
-        if (timespan < TARGET_TIMESPAN/4) timespan = TARGET_TIMESPAN/4;
-        if (timespan > TARGET_TIMESPAN*4) timespan = TARGET_TIMESPAN*4;
-    
-        // TARGET_TIMESPAN happens to be a multiple of 256, and since timespan is at least TARGET_TIMESPAN/4, we don't
-        // lose precision when target is multiplied by timespan and then divided by TARGET_TIMESPAN/256
-        target *= timespan;
-        target /= TARGET_TIMESPAN >> 8;
-        size--; // decrement size since we only divided by TARGET_TIMESPAN/256
-    
-        while (size < 1 || target > 0x007fffff) target >>= 8, size++; // normalize target for "compact" format
-    
-        // limit to MAX_PROOF_OF_WORK
-        if (size > maxsize || (size == maxsize && target > maxtarget)) target = maxtarget, size = maxsize;
-    
-        if (block->target != ((uint32_t)target | size << 24)) r = 0;
-    }
-    else if (r && block->target != previous->target) r = 0;
+
+//    // TODO: fix difficulty target check for Monacoin
+//     if (r && (block->height % BLOCK_DIFFICULTY_INTERVAL) == 0) {
+//         // target is in "compact" format, where the most significant byte is the size of resulting value in bytes, next
+//         // bit is the sign, and the remaining 23bits is the value after having been right shifted by (size - 3)*8 bits
+//         static const uint32_t maxsize = MAX_PROOF_OF_WORK >> 24, maxtarget = MAX_PROOF_OF_WORK & 0x00ffffff;
+//         int timespan = (int)((int64_t)previous->timestamp - (int64_t)transitionTime), size = previous->target >> 24;
+//         uint64_t target = previous->target & 0x00ffffff;
+//
+//         // limit difficulty transition to -75% or +400%
+//         if (timespan < TARGET_TIMESPAN/4) timespan = TARGET_TIMESPAN/4;
+//         if (timespan > TARGET_TIMESPAN*4) timespan = TARGET_TIMESPAN*4;
+//
+//         // TARGET_TIMESPAN happens to be a multiple of 256, and since timespan is at least TARGET_TIMESPAN/4, we don't
+//         // lose precision when target is multiplied by timespan and then divided by TARGET_TIMESPAN/256
+//         target *= timespan;
+//         target /= TARGET_TIMESPAN >> 8;
+//         size--; // decrement size since we only divided by TARGET_TIMESPAN/256
+//
+//         while (size < 1 || target > 0x007fffff) target >>= 8, size++; // normalize target for "compact" format
+//
+//         // limit to MAX_PROOF_OF_WORK
+//         if (size > maxsize || (size == maxsize && target > maxtarget)) target = maxtarget, size = maxsize;
+//
+//         if (block->target != ((uint32_t)target | size << 24)) r = 0;
+//     }
+//     else if (r && block->target != previous->target) r = 0;
     
     return r;
 }
