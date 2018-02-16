@@ -1,4 +1,4 @@
-﻿//
+//
 //  BRAddress.h
 //
 //  Created by Aaron Voisine on 9/18/15.
@@ -40,7 +40,7 @@ extern "C" {
 
 // bitcoin address prefixes
 #define BITCOIN_PUBKEY_ADDRESS      50
-#define BITCOIN_SCRIPT_ADDRESS      55
+#define BITCOIN_SCRIPT_ADDRESS      5
 #define BITCOIN_PUBKEY_ADDRESS_TEST 111
 #define BITCOIN_SCRIPT_ADDRESS_TEST 117
 
