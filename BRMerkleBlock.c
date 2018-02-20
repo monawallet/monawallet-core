@@ -336,13 +336,8 @@ int BRMerkleBlockVerifyDifficulty(const BRMerkleBlock *block, const BRMerkleBloc
     // TODO: implement testnet difficulty rule check
     return r; // don't worry about difficulty on testnet for now
 #endif
-
-    // limit of difficulty target
-    static const uint32_t maxtarget = MAX_PROOF_OF_WORK & 0x00ffffff, maxsize = MAX_PROOF_OF_WORK >> 24;
-    const uint32_t target = block->target & 0x00ffffff, size = block->target >> 24;
-    r = target & 0x00800000 || (size == maxsize && target > maxtarget) ? 0 : 1;
     
-//     //sTODO: fix difficulty target check for Monacoin
+//     //TODO: fix difficulty target check for Monacoin
 //     if (r && (block->height % BLOCK_DIFFICULTY_INTERVAL) == 0) {
 //         // target is in "compact" format, where the most significant byte is the size of resulting value in bytes, next
 //         // bit is the sign, and the remaining 23bits is the value after having been right shifted by (size - 3)*8 bits
