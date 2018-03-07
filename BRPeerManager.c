@@ -136,7 +136,7 @@ static const struct { uint32_t height; const char *hash; uint32_t timestamp; uin
 };
 
 static const char *dns_seeds[] = {
-    "monacoin.org.", "dnsseed.monacoin.org."
+    "monacoin.org.", "dnsseed.monacoin.org.", "monacoin.seed.lapool.me."
 };
 
 #endif
