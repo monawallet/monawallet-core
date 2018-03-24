@@ -56,13 +56,13 @@ static const struct { uint32_t height; const char *hash; uint32_t timestamp; uin
     { 60480, "944d18a6faecb209e503b3769d504bbe1907346f053ed3cdb571deabcf16e98e", 1507195495, 0x1e0343c5 },
     { 80640, "76bb518409bc7269b64f30d95c859f1f37fd803bca770af3e6bf9df88b338245", 1509826672, 0x1e053d8d },
     { 100800, "5ac6b3023321d67d8cd19379bdc0c7a492a0c9f8028d7f976c9c6685d3e0e148", 1512001767, 0x1e010cbd },
-    { 120960, "53b0f973631883646cba45082dd9df1f7be9a0afa52a9caee625b8940634255e", 1514153375, 0x1e0261ac },
+    { 120960, "34be6c71f1ad1662111f545bcce7b4c30fc50c9f37783f1f09767b867ca1dd95", 1514153375, 0x1e0261ac },
     { 141120, "43dc9bb21b2e18b45aff9eb15b19cfababa5a3f769d775ca8f6574e7fddace9b", 1516170642, 0x1e00cf52 },
     { 161280, "b7a564664bd8eb641f2421bec97db4e7d5a19e53ae84e36d0e786c9fe7ae0f0d", 1518114314, 0x1e015594 },
 };
 
 static const char *dns_seeds[] = {
-    "monacoin.org.", "testnet-dnsseed.monacoin.org."
+    "testnet-dnsseed.monacoin.org."
 };
 
 #else // main net
@@ -136,7 +136,7 @@ static const struct { uint32_t height; const char *hash; uint32_t timestamp; uin
 };
 
 static const char *dns_seeds[] = {
-    "monacoin.org.", "dnsseed.monacoin.org.", "monacoin.seed.lapool.me."
+    "dnsseed.monacoin.org.", "monacoin.seed.lapool.me."
 };
 
 #endif
