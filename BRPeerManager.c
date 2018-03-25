@@ -1,4 +1,4 @@
-//
+﻿//
 //  BRPeerManager.c
 //
 //  Created by Aaron Voisine on 9/2/15.
@@ -51,13 +51,18 @@
 
 static const struct { uint32_t height; const char *hash; uint32_t timestamp; uint32_t target; } checkpoint_array[] = {
     { 0, "a2b106ceba3be0c6d097b2a6a6aacf9d638ba8258ae478158f449c321061e0b2", 1488924140, 0x1e0ffff0 },
-    { 10, "63dd272d5b1e63ab72416d4b20fde1e08ae8ccbf3fecba2af1f36b1e70a375d4", 1499433884, 0x1e0ffff0 },
-    { 20, "040417c7685f90448f3d58ce60780a8766ab14d995f7063c525ad5e194de65d4", 1499437832, 0x1e0ffff0 },
-    { 30, "83b80264c9903c6282beca0a49928fd9fae1e58531f4a82476e6d4c2e0e7c5b6", 1499441223, 0x1e0ffff0 }
+    { 20160, "ffc5eb62445537f419902ed27fcef2bed9eba3452a463ff47cbaa4a5b488d62f", 1502348806, 0x1e049081 },
+    { 40320, "4a4aacd1b7a0254bc379cb4d0dcbebb75d6738f7eba7146a64f4a8920a5c3bd1", 1505288977, 0x1e05376e },
+    { 60480, "944d18a6faecb209e503b3769d504bbe1907346f053ed3cdb571deabcf16e98e", 1507195495, 0x1e0343c5 },
+    { 80640, "76bb518409bc7269b64f30d95c859f1f37fd803bca770af3e6bf9df88b338245", 1509826672, 0x1e053d8d },
+    { 100800, "5ac6b3023321d67d8cd19379bdc0c7a492a0c9f8028d7f976c9c6685d3e0e148", 1512001767, 0x1e010cbd },
+    { 120960, "34be6c71f1ad1662111f545bcce7b4c30fc50c9f37783f1f09767b867ca1dd95", 1514153375, 0x1e0261ac },
+    { 141120, "43dc9bb21b2e18b45aff9eb15b19cfababa5a3f769d775ca8f6574e7fddace9b", 1516170642, 0x1e00cf52 },
+    { 161280, "b7a564664bd8eb641f2421bec97db4e7d5a19e53ae84e36d0e786c9fe7ae0f0d", 1518114314, 0x1e015594 },
 };
 
 static const char *dns_seeds[] = {
-    "monacoin.org.", "testnet-dnsseed.monacoin.org."
+    "testnet-dnsseed.monacoin.org."
 };
 
 #else // main net
@@ -131,7 +136,7 @@ static const struct { uint32_t height; const char *hash; uint32_t timestamp; uin
 };
 
 static const char *dns_seeds[] = {
-    "monacoin.org.", "dnsseed.monacoin.org."
+    "dnsseed.monacoin.org.", "monacoin.seed.lapool.me."
 };
 
 #endif
@@ -988,10 +993,10 @@ static void _peerDisconnected(void *info, int error)
         txCallback[i](txInfo[i], txError);
     }
     
-    if (willSave && manager->savePeers) manager->savePeers(manager->info, 1, NULL, 0);
-    if (willSave && manager->syncStopped) manager->syncStopped(manager->info, error);
+    if (willSave && manager->savePeers && manager->isConnected) manager->savePeers(manager->info, 1, NULL, 0);
+    if (willSave && manager->syncStopped && manager->isConnected) manager->syncStopped(manager->info, error);
     if (willReconnect) BRPeerManagerConnect(manager); // try connecting to another peer
-    if (manager->txStatusUpdate) manager->txStatusUpdate(manager->info);
+    if (manager->txStatusUpdate && manager->isConnected) manager->txStatusUpdate(manager->info);
 }
 
 static void _peerRelayedPeers(void *info, const BRPeer peers[], size_t peersCount)
@@ -1198,41 +1203,10 @@ static void _peerRejectedTx(void *info, UInt256 txHash, uint8_t code)
 
 static int _BRPeerManagerVerifyBlock(BRPeerManager *manager, BRMerkleBlock *block, BRMerkleBlock *prev, BRPeer *peer)
 {
-    uint32_t transitionTime = 0;
     int r = 1;
-    
-    // check if we hit a difficulty transition, and find previous transition time   TODO: fix difficulty interval for KGW,DGW
-    if ((block->height % BLOCK_DIFFICULTY_INTERVAL) == 0) {
-        BRMerkleBlock *b = block;
-        UInt256 prevBlock;
-
-        for (uint32_t i = 0; b && i < BLOCK_DIFFICULTY_INTERVAL; i++) {
-            b = BRSetGet(manager->blocks, &b->prevBlock);
-        }
-
-        if (! b) {
-            peer_log(peer, "missing previous difficulty tansition time, can't verify blockHash: %s",
-                     u256_hex_encode(block->blockHash));
-            r = 0;
-        }
-        else {
-            transitionTime = b->timestamp;
-            prevBlock = b->prevBlock;
-        }
-        
-        while (b) { // free up some memory
-            b = BRSetGet(manager->blocks, &prevBlock);
-            if (b) prevBlock = b->prevBlock;
-
-            if (b && (b->height % BLOCK_DIFFICULTY_INTERVAL) != 0) {
-                BRSetRemove(manager->blocks, b);
-                BRMerkleBlockFree(b);
-            }
-        }
-    }
 
     // verify block difficulty
-    if (r && ! BRMerkleBlockVerifyDifficulty(block, prev, transitionTime)) {
+    if (r && ! BRMerkleBlockVerifyDifficulty(block, prev, manager->blocks)) {
         peer_log(peer, "relayed block with invalid difficulty target %x, blockHash: %s", block->target,
                  u256_hex_encode(block->blockHash));
         r = 0;
