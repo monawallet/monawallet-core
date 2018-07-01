@@ -1,4 +1,4 @@
-﻿//
+//
 //  BRPeerManager.c
 //
 //  Created by Aaron Voisine on 9/2/15.
@@ -132,7 +132,12 @@ static const struct { uint32_t height; const char *hash; uint32_t timestamp; uin
     { 1189440, "a7820c63aa26edaea1ca93538b2d8dc2ce82421665c5a8b90ace6e90b0455bdc", 1513302251, 0x1b01b164 },
     { 1209600, "3946bcc31371f8fc5227ae29cd74b0e80acb73973ab70130041c0212d55d6a8c", 1515211040, 0x1b01cb85 },
     { 1229760, "63b1ae280c2ff1c7ae0c8a5d75d3b4a998a038f23e52f6689675800153396d33", 1517121533, 0x1b01a4d5 },
-    { 1249920, "9e918c5fe509122e4752569c262870d215ecf234505c04021baab57e0d2fae53", 1519030637, 0x1b013778 }
+    { 1249920, "9e918c5fe509122e4752569c262870d215ecf234505c04021baab57e0d2fae53", 1519030637, 0x1b013778 },
+    { 1270080, "286bfff49ac11dde26ab8fe2aae2434727b193381b7add399ccada2d3c0a2f1a", 1520934813, 0x1b00f958 },
+    { 1290240, "b5be5203a936c1deba6c1fe0a3dbe045141fcc91f0e25efbb4b5efaf3554ffb4", 1522839520, 0x1b016f12 },
+    { 1310400, "572cf2547472b919a5b46f2783603174df14a8e7b0e7645bf8aa43b7a2eed41d", 1524747242, 0x1b01dd10 },
+    { 1330560, "ddf03e1fcc485a2a58fcc131cf381c8d64bf35d2420b45a61642c9359b09937b", 1526654013, 0x1b0177f4 },
+    { 1350720, "86fc669dc2b9fce9bec8be63a4ff4cebea864a5cc7ab30f1dd38387200558749", 1528561630, 0x1b01c376 }
 };
 
 static const char *dns_seeds[] = {
@@ -993,10 +998,10 @@ static void _peerDisconnected(void *info, int error)
         txCallback[i](txInfo[i], txError);
     }
     
-    if (willSave && manager->savePeers && manager->isConnected) manager->savePeers(manager->info, 1, NULL, 0);
-    if (willSave && manager->syncStopped && manager->isConnected) manager->syncStopped(manager->info, error);
+    if (willSave && manager->savePeers) manager->savePeers(manager->info, 1, NULL, 0);
+    if (willSave && manager->syncStopped) manager->syncStopped(manager->info, error);
     if (willReconnect) BRPeerManagerConnect(manager); // try connecting to another peer
-    if (manager->txStatusUpdate && manager->isConnected) manager->txStatusUpdate(manager->info);
+    if (manager->txStatusUpdate) manager->txStatusUpdate(manager->info);
 }
 
 static void _peerRelayedPeers(void *info, const BRPeer peers[], size_t peersCount)
