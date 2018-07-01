@@ -344,30 +344,30 @@ int BRMerkleBlockVerifyDifficulty(const BRMerkleBlock *block, const BRMerkleBloc
 #if BITCOIN_TESTNET
                 r = 1;
 #else
-                if (block->height == 1249921) r = block->target == 0x1b01478c ? 1 : 0;
-                if (block->height == 1249922) r = block->target == 0x1b0150fe ? 1 : 0;
-                if (block->height == 1249923) r = block->target == 0x1b01b901 ? 1 : 0;
-                if (block->height == 1249924) r = block->target == 0x1b01b2a3 ? 1 : 0;
-                if (block->height == 1249925) r = block->target == 0x1b01aa08 ? 1 : 0;
-                if (block->height == 1249926) r = block->target == 0x1b01cca8 ? 1 : 0;
-                if (block->height == 1249927) r = block->target == 0x1b01dca2 ? 1 : 0;
-                if (block->height == 1249928) r = block->target == 0x1b01c229 ? 1 : 0;
-                if (block->height == 1249929) r = block->target == 0x1b01bfcd ? 1 : 0;
-                if (block->height == 1249930) r = block->target == 0x1b01ba7c ? 1 : 0;
-                if (block->height == 1249931) r = block->target == 0x1b01b68d ? 1 : 0;
-                if (block->height == 1249932) r = block->target == 0x1b01bca9 ? 1 : 0;
-                if (block->height == 1249933) r = block->target == 0x1b01b662 ? 1 : 0;
-                if (block->height == 1249934) r = block->target == 0x1b01b310 ? 1 : 0;
-                if (block->height == 1249935) r = block->target == 0x1b01b2bd ? 1 : 0;
-                if (block->height == 1249936) r = block->target == 0x1b0180eb ? 1 : 0;
-                if (block->height == 1249937) r = block->target == 0x1b016ea4 ? 1 : 0;
-                if (block->height == 1249938) r = block->target == 0x1b016cae ? 1 : 0;
-                if (block->height == 1249939) r = block->target == 0x1b017050 ? 1 : 0;
-                if (block->height == 1249940) r = block->target == 0x1b0167e6 ? 1 : 0;
-                if (block->height == 1249941) r = block->target == 0x1b015a21 ? 1 : 0;
-                if (block->height == 1249942) r = block->target == 0x1b014404 ? 1 : 0;
-                if (block->height == 1249943) r = block->target == 0x1b0162ee ? 1 : 0;
-                if (block->height == 1249944) r = block->target == 0x1b015364 ? 1 : 0;
+                if (block->height == 1350721) r = block->target == 0x1b01ccec ? 1 : 0;
+                if (block->height == 1350722) r = block->target == 0x1b01daff ? 1 : 0;
+                if (block->height == 1350723) r = block->target == 0x1b01e500 ? 1 : 0;
+                if (block->height == 1350724) r = block->target == 0x1b01dc98 ? 1 : 0;
+                if (block->height == 1350725) r = block->target == 0x1b019aca ? 1 : 0;
+                if (block->height == 1350726) r = block->target == 0x1b01b265 ? 1 : 0;
+                if (block->height == 1350727) r = block->target == 0x1b01bed3 ? 1 : 0;
+                if (block->height == 1350728) r = block->target == 0x1b01b6db ? 1 : 0;
+                if (block->height == 1350729) r = block->target == 0x1b01d499 ? 1 : 0;
+                if (block->height == 1350730) r = block->target == 0x1b01ce17 ? 1 : 0;
+                if (block->height == 1350731) r = block->target == 0x1b01cdd9 ? 1 : 0;
+                if (block->height == 1350732) r = block->target == 0x1b01b153 ? 1 : 0;
+                if (block->height == 1350733) r = block->target == 0x1b01b87b ? 1 : 0;
+                if (block->height == 1350734) r = block->target == 0x1b019c70 ? 1 : 0;
+                if (block->height == 1350735) r = block->target == 0x1b01986e ? 1 : 0;
+                if (block->height == 1350736) r = block->target == 0x1b018982 ? 1 : 0;
+                if (block->height == 1350737) r = block->target == 0x1b0176d4 ? 1 : 0;
+                if (block->height == 1350738) r = block->target == 0x1b014d66 ? 1 : 0;
+                if (block->height == 1350739) r = block->target == 0x1b013e29 ? 1 : 0;
+                if (block->height == 1350740) r = block->target == 0x1b013431 ? 1 : 0;
+                if (block->height == 1350741) r = block->target == 0x1b013a27 ? 1 : 0;
+                if (block->height == 1350742) r = block->target == 0x1b015b09 ? 1 : 0;
+                if (block->height == 1350743) r = block->target == 0x1b016d30 ? 1 : 0;
+                if (block->height == 1350744) r = block->target == 0x1b016e21 ? 1 : 0;
 #endif
             } else {
                 r = (abs(diff) < 2) ? 1 : 0; //the core client is less precise with a rounding error that can sometimes cause a problem. We are very rarely 1 off
