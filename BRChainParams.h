@@ -47,47 +47,39 @@ typedef struct {
 } BRChainParams;
 
 static const char *BRMainNetDNSSeeds[] = {
-    "dnsseed.litecoinpool.org.", "seed-a.litecoin.loshan.co.uk.", "dnsseed.thrasher.io.",
-    "dnsseed.koin-project.com.", "dnsseed.litecointools.com.", NULL};
+    "dnsseed.monacoin.org.", "monacoin.seed.lapool.me.", "dnsseed.tamami-foundation.org.", NULL
+};
 
 static const char *BRTestNetDNSSeeds[] = {
-    "testnet-seed.ltc.xurious.com.", "seed-b.litecoin.loshan.co.uk.", "dnsseed-testnet.thrasher.io.", NULL
+    "testnet-dnsseed.monacoin.org.", NULL
 };
 
 // blockchain checkpoints - these are also used as starting points for partial chain downloads, so they must be at
 // difficulty transition boundaries in order to verify the block difficulty at the immediately following transition
 static const BRCheckPoint BRMainNetCheckpoints[] = {
-    {       0, uint256("12a765e31ffd4059bada1e25190f6e98c99d9714d334efa41a195a7e7e04bfe2"), 1317972665, 0x1e0ffff0 },
-    {   20160, uint256("633036c8df655531c2449b2d09b264cc0b49d945a89be23fd3c1a97361ca198c"), 1319798300, 0x1d055262 },
-    {   40320, uint256("d148cdd2cf44069cef4b63f0feaf30a8d291ca9ea9ba7e83f226b9738c1d5e9c"), 1322522019, 0x1d018053 },
-    {   60480, uint256("3250f0a560d55f039c34bfaee1b71297aa5104ac6641778f9a87d73232d12c6c"), 1325540574, 0x1d00e848 },
-    {   80640, uint256("bedc0a090b740b1902d870aeb6caa89040a24e7d670d46f8ef035fd9d2e9ce80"), 1328779944, 0x1d00ab92 },
-    {  100800, uint256("7b0b620d15f781faaaa73b43607a49d5becb2b803ef19b4010014646cc177a61"), 1331873688, 0x1d00ae9f },
-    {  120960, uint256("dbd6249f30e5690890bc03dabcc0a526c46adcde572be06af4075b6ea28aa251"), 1334881566, 0x1d009e48 },
-    {  141120, uint256("5d5e15a45cecf2b9528e36e63c407167423a2f9963a96bbce3b67b75fd10be2a"), 1338009318, 0x1d00d6a6 },
-    {  161280, uint256("f595c754d0abcfe3616573bfabee01b230ec0ea6b2f2894c40214ea23d772b6c"), 1340918301, 0x1d008881 },
-    {  181440, uint256("d7fa3152959f3c25e33edf825f7cbef75ee651d5f9183cc4ed8d19d57b8f35a4"), 1343534530, 0x1c1cd430 },
-    {  201600, uint256("d481df8e8ce144fca9ae6b3157cc706e903c6ea161a13d2c421270354a02d6d0"), 1346567025, 0x1c1c89e8 },
-    {  282240, uint256("8932095fba44bd6860fd71745c0dca908769221a47166ab1fb442b6cefcd53fb"), 1358801720, 0x1c0ced21 },
-    {  342720, uint256("33f62e026a202be550e8a9df37d638d38991553544e279cb264123378bf46042"), 1367113967, 0x1c0095a5 },
-    {  383040, uint256("5c0a443361c1356796a7db472c69433b6ce6108d61e4403fd9a9d91e01009ce3"), 1372971948, 0x1b481262 },
-    {  443520, uint256("37d668803ed1efc24ffab4a2a90da9ac92679acf68370d7570f042c2bd6d651b"), 1382034998, 0x1b3f864f },
-    {  504000, uint256("97db0624d3d5137bc085f0d731607314972bb4124b85b73420ef9aa5fc10d640"), 1390892377, 0x1b1aa868 },
-    {  564480, uint256("c876276bf12754c2b265787d9e7ab83d429e59761dc63057f728529018db7834"), 1399724592, 0x1b099dce },
-    {  624960, uint256("ccac71fafe98107b81ac3e0eed41190e4d47600962c93c49db8843b53f760bda"), 1408389228, 0x1b02552d },
-    {  685440, uint256("29d2328990dda4c4870846d4e3d573785452bed68e6013930a83fc8d5fe89b09"), 1417289378, 0x1b01473b },
-    {  745920, uint256("04809a35ff6e5054e21d14582072605b812b7d4ae11d3450e7c03a7237e1d35d"), 1426441593, 0x1b019b8c },
-    {  806400, uint256("e2363e8b3e8f237b9b1bfc1c72ede80fef2c7bd1aabcd78afed82065a194b960"), 1435516150, 0x1b019268 },
-    {  846720, uint256("6f5d94d7cfd01f1dbf4aa631b987f8e2ec9d0c57720604787b816bafe34192a8"), 1441561050, 0x1b0187a3 },
-    {  901152, uint256("cfccdf8e3830ae4879e910051ac3dc583b4fb45b83be3a38019e5d9326dfa223"), 1449698771, 0x1b015b0e },
-    {  953568, uint256("e46e01cf1239cffa69408ac162d517bac5a4899972e0328fd0ba4d93e8ad3764"), 1457542869, 0x1b013c91 },
-    { 1058400, uint256("76ce37c66d449a4ffbfc35674cf932da701066a001dc223754f9250dd2bdbc62"), 1473296285, 0x1b013ca7 },
-    { 1260000, uint256("85a22b528d805bf7a641d1d7c6d96ef5054beda3dcab6be7b83f2e3df24b33a8"), 1502976600, 0x1a25a0d3 },
-    { 1411200, uint256("92c85b76f3d4bffca76b23717e4eb1b667c77c96fd52d4dd5dd843bbee64cd73"), 1524838967, 0x1a0203a7 }
+    {       0, uint256("ff9f1c0116d19de7c9963845e129f9ed1bfc0b376eb54fd7afa42e0d418c8bb6"), 1388479472, 0x1e0ffff0 },
+    {  100800, uint256("3e3cfc1e6573fe128865c9273bb1126120096afe706da98798be2decc56c276f"), 1397003984, 0x1c0da7a6 },
+    {  201600, uint256("061b8b99b37e5234a4d32775d74c3a45703e34b89e796eafbcd6ca0804426e7c"), 1406373989, 0x1c0125c5 },
+    {  302400, uint256("ffff3d65d170d8a515d77a0439dee9f6a969097f82b6061f8e1a2cd9a9ef6024"), 1418879501, 0x1c008127 },
+    {  403200, uint256("67c31a52f881d020dcaf3ab14e027f4d0710a16263502611d8688d8b86ae9e2a"), 1433578614, 0x1b26ac5d },
+    {  504000, uint256("e3d813e519a79b8bc4d7b35bb923c9992dc4c0bcca8d07d23ae9c10660d52408"), 1448443781, 0x1b5e2d4d },
+    {  604800, uint256("02d0510ca18d081b67df44a3f4798c55597a25ce9bba442de825068e0cbd81ad"), 1457956652, 0x1c00f8f3 },
+    {  705600, uint256("937ea6d2256dfbe8f3495fe545cce9964be566967a33055ee66bf8b8e1129d46"), 1467463781, 0x1b6c29a1 },
+    {  806400, uint256("4987de18a5ee0896c252a09521fd568312046b142c5b36ed73b6000685ca3479"), 1476975211, 0x1b622a9c },
+    {  907200, uint256("cae1cc406fd228fe57e44b157c5f204772002b0c67f99cd5fcc18452fe748bac"), 1486526968, 0x1c00864f },
+    { 1008000, uint256("0941421e644b7a1a872b2809a1ae43e8da3dbf4d925fae34caa9cacd2859c614"), 1496138162, 0x1b18edc8 },
+    { 1108800, uint256("5be09a3965912fbe9c56d41140df592e92bc6b72b57fd96dda163623ac83a9e7"), 1505659451, 0x1b07dbad },
+    { 1209600, uint256("3946bcc31371f8fc5227ae29cd74b0e80acb73973ab70130041c0212d55d6a8c"), 1515211040, 0x1b01cb85 },
+    { 1310400, uint256("572cf2547472b919a5b46f2783603174df14a8e7b0e7645bf8aa43b7a2eed41d"), 1524747242, 0x1b01dd10 },
+    { 1411200, uint256("5d6ee34fbe619e459f6fd6639adeafc618b4c18db4026eaa9f248bac8ec5abf2"), 1534274188, 0x1b0148ca },
+    { 1512000, uint256("0a44aff821099e59cbce8cbc08ac0b79835a9f23ad57f710d5be2cb0754446ff"), 1543783044, 0x1a3357ce },
+    { 1612800, uint256("e2aabd02174ac273baf430a387930f34a2487a6df80a15177c7b55a258ef4097"), 1553294574, 0x1a302593 }
 };
 
 static const BRCheckPoint BRTestNetCheckpoints[] = {
-    {       0, uint256("4966625a4b2851d9fdee139e56211a0d88575f59ed816ff5e6a63deb4e3e29a0"), 1486949366, 0x1e0ffff0 }
+    {       0, uint256("a2b106ceba3be0c6d097b2a6a6aacf9d638ba8258ae478158f449c321061e0b2"), 1488924140, 0x1e0ffff0 },
+    {  100800, uint256("5ac6b3023321d67d8cd19379bdc0c7a492a0c9f8028d7f976c9c6685d3e0e148"), 1512001767, 0x1e010cbd },
+    {  201600, uint256("ca072a2cb4f53d3de90482cb24787a535bef784d0e23b0e7de86b31a6e18075c"), 1522245582, 0x1e01067f }
 };
 
 static int BRMainNetVerifyDifficulty(const BRMerkleBlock *block, const BRSet *blockSet)
@@ -117,7 +109,7 @@ static int BRTestNetVerifyDifficulty(const BRMerkleBlock *block, const BRSet *bl
 
 static const BRChainParams BRMainNetParams = {
     BRMainNetDNSSeeds,
-    9333,       // standardPort
+    9401,       // standardPort
     0xdbb6c0fb, // magicNumber
     0,          // services
     BRMainNetVerifyDifficulty,
@@ -126,7 +118,7 @@ static const BRChainParams BRMainNetParams = {
 
 static const BRChainParams BRTestNetParams = {
     BRTestNetDNSSeeds,
-    19335,      // standardPort
+    19403,      // standardPort
     0xf1c8d2fd, // magicNumber
     0,          // services
     BRTestNetVerifyDifficulty,
