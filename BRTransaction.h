@@ -1,4 +1,4 @@
-﻿//
+//
 //  BRTransaction.h
 //
 //  Created by Aaron Voisine on 8/31/15.
@@ -34,7 +34,7 @@
 extern "C" {
 #endif
 
-#define TX_FEE_PER_KB        5000ULL     // standard tx fee per kb of tx size, rounded up to nearest kb
+#define TX_FEE_PER_KB        1000ULL     // standard tx fee per kb of tx size, rounded up to nearest kb
 #define TX_OUTPUT_SIZE       34          // estimated size for a typical transaction output
 #define TX_INPUT_SIZE        148         // estimated size for a typical compact pubkey transaction input
 #define TX_MIN_OUTPUT_AMOUNT (TX_FEE_PER_KB*3*(TX_OUTPUT_SIZE + TX_INPUT_SIZE)/1000) //no txout can be below this amount
@@ -47,7 +47,7 @@ extern "C" {
 #define TXIN_SEQUENCE        UINT32_MAX  // sequence number for a finalized tx input
 
 #define SATOSHIS             100000000LL
-#define MAX_MONEY            (105120000LL*SATOSHIS)
+#define MAX_MONEY            (84000000LL*SATOSHIS)
 
 #define BR_RAND_MAX          ((RAND_MAX > 0x7fffffff) ? 0x7fffffff : RAND_MAX)
 
@@ -57,7 +57,7 @@ uint32_t BRRand(uint32_t upperBound);
 typedef struct {
     UInt256 txHash;
     uint32_t index;
-    char address[36];
+    char address[75];
     uint64_t amount;
     uint8_t *script;
     size_t scriptLen;
@@ -71,7 +71,7 @@ void BRTxInputSetScript(BRTxInput *input, const uint8_t *script, size_t scriptLe
 void BRTxInputSetSignature(BRTxInput *input, const uint8_t *signature, size_t sigLen);
 
 typedef struct {
-    char address[36];
+    char address[75];
     uint64_t amount;
     uint8_t *script;
     size_t scriptLen;
@@ -97,6 +97,9 @@ typedef struct {
 
 // returns a newly allocated empty transaction that must be freed by calling BRTransactionFree()
 BRTransaction *BRTransactionNew(void);
+
+// returns a deep copy of tx and that must be freed by calling BRTransactionFree()
+BRTransaction *BRTransactionCopy(const BRTransaction *tx);
 
 // buf must contain a serialized tx
 // retruns a transaction that must be freed by calling BRTransactionFree()
@@ -127,7 +130,7 @@ uint64_t BRTransactionStandardFee(const BRTransaction *tx);
 int BRTransactionIsSigned(const BRTransaction *tx);
 
 // adds signatures to any inputs with NULL signatures that can be signed with any keys
-// forkId is 0 for bitcoin, 0x40 for b-cash
+// forkId is 0 for bitcoin, 0x40 for b-cash, 0x4f for b-gold
 // returns true if tx is signed
 int BRTransactionSign(BRTransaction *tx, int forkId, BRKey keys[], size_t keysCount);
 

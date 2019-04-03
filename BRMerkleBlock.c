@@ -89,6 +89,19 @@ BRMerkleBlock *BRMerkleBlockNew(void)
     return block;
 }
 
+// returns a deep copy of block and that must be freed by calling BRMerkleBlockFree()
+BRMerkleBlock *BRMerkleBlockCopy(const BRMerkleBlock *block)
+{
+    BRMerkleBlock *cpy = BRMerkleBlockNew();
+
+    assert(block != NULL);
+    *cpy = *block;
+    cpy->hashes = NULL;
+    cpy->flags = NULL;
+    BRMerkleBlockSetTxHashes(cpy, block->hashes, block->hashesCount, block->flags, block->flagsLen);
+    return cpy;
+}
+
 // buf must contain either a serialized merkleblock or header
 // returns a merkle block struct that must be freed by calling BRMerkleBlockFree()
 BRMerkleBlock *BRMerkleBlockParse(const uint8_t *buf, size_t bufLen, uint32_t currentHeight)
@@ -226,7 +239,6 @@ void BRMerkleBlockSetTxHashes(BRMerkleBlock *block, const UInt256 hashes[], size
     assert(hashes != NULL || hashesCount == 0);
     assert(flags != NULL || flagsLen == 0);
     
-    // TODO: fix difficulty target check for Monacoin
     if (block->hashes) free(block->hashes);
     block->hashes = (hashesCount > 0) ? malloc(hashesCount*sizeof(UInt256)) : NULL;
     if (block->hashes) memcpy(block->hashes, hashes, hashesCount*sizeof(UInt256));
@@ -323,135 +335,43 @@ int BRMerkleBlockContainsTxHash(const BRMerkleBlock *block, UInt256 txHash)
 // targeted time between transitions (14*24*60*60 seconds). If the new difficulty is more than 4x or less than 1/4 of
 // the previous difficulty, the change is limited to either 4x or 1/4. There is also a minimum difficulty value
 // intuitively named MAX_PROOF_OF_WORK... since larger values are less difficult.
-int BRMerkleBlockVerifyDifficulty(const BRMerkleBlock *block, const BRMerkleBlock *previous, const BRSet *blocks)
+int BRMerkleBlockVerifyDifficulty(const BRMerkleBlock *block, const BRMerkleBlock *previous, uint32_t transitionTime)
 {
     int r = 1;
     
     assert(block != NULL);
     assert(previous != NULL);
-    assert(blocks != NULL);
     
     if (! previous || !UInt256Eq(block->prevBlock, previous->blockHash) || block->height != previous->height + 1) r = 0;
-
-    if (block->height >= SWITCH_LYRA_DGW_BLOCK) {
-
-        int32_t darkGravityWaveTarget = darkGravityWaveTargetWithPreviousBlocks(blocks, previous);
-        int32_t diff = block->target - darkGravityWaveTarget;
-
-        {
-            static uint pastCount = 0;
-            if (pastCount < DGW_PAST_BLOCKS_MAX ) {
-#if BITCOIN_TESTNET
-                r = 1;
-#else
-                if (block->height == 1350721) r = block->target == 0x1b01ccec ? 1 : 0;
-                if (block->height == 1350722) r = block->target == 0x1b01daff ? 1 : 0;
-                if (block->height == 1350723) r = block->target == 0x1b01e500 ? 1 : 0;
-                if (block->height == 1350724) r = block->target == 0x1b01dc98 ? 1 : 0;
-                if (block->height == 1350725) r = block->target == 0x1b019aca ? 1 : 0;
-                if (block->height == 1350726) r = block->target == 0x1b01b265 ? 1 : 0;
-                if (block->height == 1350727) r = block->target == 0x1b01bed3 ? 1 : 0;
-                if (block->height == 1350728) r = block->target == 0x1b01b6db ? 1 : 0;
-                if (block->height == 1350729) r = block->target == 0x1b01d499 ? 1 : 0;
-                if (block->height == 1350730) r = block->target == 0x1b01ce17 ? 1 : 0;
-                if (block->height == 1350731) r = block->target == 0x1b01cdd9 ? 1 : 0;
-                if (block->height == 1350732) r = block->target == 0x1b01b153 ? 1 : 0;
-                if (block->height == 1350733) r = block->target == 0x1b01b87b ? 1 : 0;
-                if (block->height == 1350734) r = block->target == 0x1b019c70 ? 1 : 0;
-                if (block->height == 1350735) r = block->target == 0x1b01986e ? 1 : 0;
-                if (block->height == 1350736) r = block->target == 0x1b018982 ? 1 : 0;
-                if (block->height == 1350737) r = block->target == 0x1b0176d4 ? 1 : 0;
-                if (block->height == 1350738) r = block->target == 0x1b014d66 ? 1 : 0;
-                if (block->height == 1350739) r = block->target == 0x1b013e29 ? 1 : 0;
-                if (block->height == 1350740) r = block->target == 0x1b013431 ? 1 : 0;
-                if (block->height == 1350741) r = block->target == 0x1b013a27 ? 1 : 0;
-                if (block->height == 1350742) r = block->target == 0x1b015b09 ? 1 : 0;
-                if (block->height == 1350743) r = block->target == 0x1b016d30 ? 1 : 0;
-                if (block->height == 1350744) r = block->target == 0x1b016e21 ? 1 : 0;
-#endif
-            } else {
-                r = (abs(diff) < 2) ? 1 : 0; //the core client is less precise with a rounding error that can sometimes cause a problem. We are very rarely 1 off
-            }
-            pastCount ++;
-        }
-    }
+    if (r && (block->height % BLOCK_DIFFICULTY_INTERVAL) == 0 && transitionTime == 0) r = 0;
+        
+    // if (r && (block->height % BLOCK_DIFFICULTY_INTERVAL) == 0) {
+    //     // target is in "compact" format, where the most significant byte is the size of resulting value in bytes, next
+    //     // bit is the sign, and the remaining 23bits is the value after having been right shifted by (size - 3)*8 bits
+    //     static const uint32_t maxsize = MAX_PROOF_OF_WORK >> 24, maxtarget = MAX_PROOF_OF_WORK & 0x00ffffff;
+    //     int timespan = (int)((int64_t)previous->timestamp - (int64_t)transitionTime), size = previous->target >> 24;
+    //     uint64_t target = previous->target & 0x00ffffff;
+    
+    //     // limit difficulty transition to -75% or +400%
+    //     if (timespan < TARGET_TIMESPAN/4) timespan = TARGET_TIMESPAN/4;
+    //     if (timespan > TARGET_TIMESPAN*4) timespan = TARGET_TIMESPAN*4;
+    
+    //     // TARGET_TIMESPAN happens to be a multiple of 256, and since timespan is at least TARGET_TIMESPAN/4, we don't
+    //     // lose precision when target is multiplied by timespan and then divided by TARGET_TIMESPAN/256
+    //     target *= timespan;
+    //     target /= TARGET_TIMESPAN >> 8;
+    //     size--; // decrement size since we only divided by TARGET_TIMESPAN/256
+    
+    //     while (size < 1 || target > 0x007fffff) target >>= 8, size++; // normalize target for "compact" format
+    
+    //     // limit to MAX_PROOF_OF_WORK
+    //     if (size > maxsize || (size == maxsize && target > maxtarget)) target = maxtarget, size = maxsize;
+    
+    //     if (block->target != ((uint32_t)target | size << 24)) r = 0;
+    // }
+    // else if (r && block->target != previous->target) r = 0;
+    
     return r;
-}
-
-
-int32_t darkGravityWaveTargetWithPreviousBlocks(const BRSet *blocks, const BRMerkleBlock *previous)
-{
-    /* current difficulty formula, darkcoin - based on DarkGravity v3, original work done by evan duffield, modified for iOS */
-    BRMerkleBlock *previousBlock = BRSetGet(blocks, previous);
-    
-    int32_t nActualTimespan = 0;
-    int64_t lastBlockTime = 0;
-    int64_t blockCount = 0;
-    UInt256 sumTargets = UINT256_ZERO;
-    
-    if (!previousBlock || previousBlock->height == 0 || previousBlock->height < SWITCH_LYRA_DGW_BLOCK + DGW_PAST_BLOCKS_MIN) {
-        // This is the first block or the height is < PastBlocksMin
-        // Return minimal required work. (1e0ffff)
-        return MAX_PROOF_OF_WORK;
-    }
-    
-    //BRMerkleBlock *currentBlock = previousBlock;
-    BRMerkleBlock *currentBlock = previousBlock;
-    // loop over the past n blocks, where n == PastBlocksMax
-    for (blockCount = 1; currentBlock && currentBlock->height  > 0 && blockCount<=DGW_PAST_BLOCKS_MAX; blockCount++) {
-        
-        // Calculate average difficulty based on the blocks we iterate over in this for loop
-        if(blockCount <= DGW_PAST_BLOCKS_MIN) {
-            UInt256 currentTarget = setCompact(currentBlock->target);
-            
-            if (blockCount == 1) {
-                sumTargets = add(currentTarget,currentTarget);
-            } else {
-                sumTargets = add(sumTargets,currentTarget);
-            }
-        }
-        
-        // If this is the second iteration (LastBlockTime was set)
-        if(lastBlockTime > 0){
-            // Calculate time difference between previous block and current block
-            int64_t currentBlockTime = currentBlock->timestamp;
-            int64_t diff = ((lastBlockTime) - (currentBlockTime));
-            // Increment the actual timespan
-            nActualTimespan += diff;
-        }
-        // Set lastBlockTime to the block time for the block in current iteration
-        lastBlockTime = currentBlock->timestamp;
-        
-        if (previousBlock == NULL) { assert(currentBlock); break; }
-        currentBlock = BRSetGet(blocks, &currentBlock->prevBlock);
-    }
-    
-    UInt256 blockCount256 = ((UInt256) { .u64 = { blockCount, 0, 0, 0 } });
-    // darkTarget is the difficulty
-    UInt256 darkTarget = divide(sumTargets,blockCount256);
-    
-    // nTargetTimespan is the time that the CountBlocks should have taken to be generated.
-    uint32_t nTargetTimespan = (blockCount - 1) * TARGET_SPACING;
-    
-    // Limit the re-adjustment to 3x or 0.33x
-    // We don't want to increase/decrease diff too much.
-    if (nActualTimespan < nTargetTimespan/3.0f)
-        nActualTimespan = nTargetTimespan/3.0f;
-    if (nActualTimespan > nTargetTimespan*3.0f)
-        nActualTimespan = nTargetTimespan*3.0f;
-    
-    // Calculate the new difficulty based on actual and target timespan.
-    darkTarget = divide(multiplyThis32(darkTarget,nActualTimespan),((UInt256) { .u64 = { nTargetTimespan, 0, 0, 0 } }));
-    
-    uint32_t compact = getCompact(darkTarget);
-    
-    // If calculated difficulty is lower than the minimal diff, set the new difficulty to be the minimal diff.
-    if (compact > MAX_PROOF_OF_WORK){
-        compact = MAX_PROOF_OF_WORK;
-    }
-    
-    // Return the new diff.
-    return compact;
 }
 
 // frees memory allocated by BRMerkleBlockParse
